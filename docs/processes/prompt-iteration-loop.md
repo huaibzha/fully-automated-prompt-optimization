@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 
 ## Purpose
 
-Architecture reference for the optimization system. The `optimization` agent drives the loop autonomously; this document describes the components it uses.
+Architecture reference for the optimization system. The Codex optimization workflow drives the loop autonomously; this document describes the components it uses.
 
 ## Architecture
 
@@ -16,21 +16,21 @@ Architecture reference for the optimization system. The `optimization` agent dri
 
 | Component | File | Role |
 |-----------|------|------|
-| Optimization Agent | `.claude/agents/optimization.md` | Goal-oriented optimizer — analyzes results, creates variants, runs evals, iterates until targets are met |
+| Optimization Workflow | `.codex/agents/optimization.md` | Goal-oriented optimizer: analyzes results, creates variants, runs evals, iterates until targets are met |
 
 ### Execution Components
 
 | Component | File | Role |
 |-----------|------|------|
-| Variant Reviewer | `.claude/agents/variant-reviewer.md` | Independent guardrail check on proposed variants before eval |
-| Eval Runner | `.claude/commands/eval-runner.md` | Runs evaluations and returns score summaries |
+| Variant Reviewer | `.codex/agents/variant-reviewer.md` | Independent guardrail check on proposed variants before eval |
+| Eval Runner | `.codex/commands/eval-runner.md` | Runs evaluations and returns score summaries |
 
 ### Data Tools
 
 | Component | File | Role |
 |-----------|------|------|
-| Synthetic Samples | `.claude/commands/synthetic-samples.md` | Creates synthetic examples for dataset augmentation |
-| Synthetic Pruner | `.claude/commands/synthetic-pruner.md` | Validates and cleans synthetic data |
+| Synthetic Samples | `.codex/commands/synthetic-samples.md` | Creates synthetic examples for dataset augmentation |
+| Synthetic Pruner | `.codex/commands/synthetic-pruner.md` | Validates and cleans synthetic data |
 
 ## Iteration Memory
 
@@ -38,15 +38,15 @@ Structured history lives in `tenants/<tenant_id>/docs/iteration-memory.jsonl` (o
 
 ## Tenant Playbooks
 
-Each tenant defines its own constraints in `tenants/<tenant_id>/docs/iteration-playbook.md`. Playbooks are authoritative — they set scope, success criteria, and rules that the optimization agent must follow.
+Each tenant defines its own constraints in `tenants/<tenant_id>/docs/iteration-playbook.md`. Playbooks are authoritative — they set scope, success criteria, and rules that the optimization workflow must follow.
 
 ## Scope Constraints
 
-Tenant playbooks can restrict which files the optimization agent is allowed to create or modify. The mechanism has three layers:
+Tenant playbooks can restrict which files the optimization workflow is allowed to create or modify. The mechanism has three layers:
 
 1. **Playbook definition**: the tenant playbook includes a `### Scope Constraint` section with an `**Allowed pattern**` glob and a list of forbidden categories.
-2. **Optimization agent self-check**: on startup, the agent extracts the scope constraint and verifies every file it creates or modifies against the allowed pattern before proceeding. Violations are blocking.
-3. **Variant reviewer validation**: the variant-reviewer independently reads the playbook, extracts the same constraint, and verifies the variant path and any other modified files as Check 7 (Scope Compliance). This catches anything the optimization agent missed.
+2. **Optimization workflow self-check**: on startup, Codex extracts the scope constraint and verifies every file it creates or modifies against the allowed pattern before proceeding. Violations are blocking.
+3. **Variant reviewer validation**: the variant-reviewer phase independently reads the playbook, extracts the same constraint, and verifies the variant path and any other modified files as a scope compliance check.
 
 **Exempt operational files**: eval configs, iteration memory (`iteration-memory.jsonl`), and change logs (`change-log.md`) are not subject to scope constraints — they are necessary for the optimization loop itself.
 

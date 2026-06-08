@@ -102,13 +102,21 @@ cat eval_output/summary.md
 
 ### 4. Optimize
 
-Open [Claude Code](https://docs.anthropic.com/en/docs/claude-code) in your project directory and run the optimization agent:
+Open Codex in your project directory and ask it to follow the FAPO optimization workflow:
 
 ```
-> /optimization
-  → Tenant: my_project
-  → Config: eval.json
-  → Success criteria: composite_score >= 90
+Optimize tenant my_project using eval.json.
+Success criteria: composite_score >= 90.
+Follow .codex/agents/optimization.md.
+```
+
+For repeated autonomous rounds from the terminal, use the Codex loop script:
+
+```bash
+scripts/optimize-loop-codex.sh \
+  --tenant my_project \
+  --config eval.json \
+  --goal "composite_score >= 90"
 ```
 
 The agent autonomously analyzes failures, creates improved prompt variants, evaluates them, and iterates until your target score is reached. See [Optimization loop](#optimization-loop) for the full details.
@@ -296,22 +304,21 @@ Evaluation tells you *how well* your chain performs. Optimization tells you *wha
 
 ### Running it
 
-The optimization loop is driven by [Claude Code](https://docs.anthropic.com/en/docs/claude-code) agents. From within your project directory:
+The optimization loop is driven by Codex workflow prompts under `.codex/`. From within your project directory:
 
-```
+```bash
 # 1. Run a baseline eval first
-> /eval-runner
-  → Tenant: my_project
-  → Config: tenants/my_project/configs/eval.json
+python scripts/eval/run_eval_and_summarize.py \
+  --config tenants/my_project/configs/eval.json
 
 # 2. Start the autonomous optimization loop
-> /optimization
-  → Tenant: my_project
-  → Config: tenants/my_project/configs/eval.json
-  → Success criteria: composite_score >= 80
+scripts/optimize-loop-codex.sh \
+  --tenant my_project \
+  --config tenants/my_project/configs/eval.json \
+  --goal "composite_score >= 80"
 ```
 
-The `/optimization` agent takes over from there. It will:
+The Codex optimization workflow takes over from there. It will:
 1. Read the tenant's `docs/iteration-playbook.md` to understand what it's allowed to change (the **scope contract**)
 2. Run failure analysis on the eval results
 3. Create new prompt/parameter/chain variants targeting the top failure patterns
@@ -319,9 +326,9 @@ The `/optimization` agent takes over from there. It will:
 5. Run eval on the new variant and compare to the previous best
 6. Repeat until success criteria are met or all allowed optimization levels are exhausted
 
-The agent manages three internal subagents automatically — you don't invoke these directly:
-- **step-attribution** — classifies failures by root cause after each eval
-- **variant-reviewer** — checks proposed variants for leakage, placeholder drift, and scope violations before eval
+The workflow uses two internal review phases:
+- **step-attribution** - classifies failures by root cause after each eval
+- **variant-reviewer** - checks proposed variants for leakage, placeholder drift, and scope violations before eval
 
 You can also run evals and optimization steps manually via the CLI (see [CLI reference](#cli-reference) below), but the agent handles the full loop autonomously.
 
@@ -457,30 +464,30 @@ Scopes: `raw` (source artifacts), `derived` (processed datasets), `all`.
 
 ---
 
-## Claude Code skills
+## Codex workflows
 
-FAPO ships with [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skills that automate common workflows. Run these as slash commands inside Claude Code:
+FAPO ships with Codex workflow prompts that automate common workflows. In Codex, ask for the workflow in plain language; in terminal automation, use `codex exec` or the provided loop script.
 
-### User-invocable skills
+### User-invocable workflows
 
-| Skill | Command | What it does |
+| Workflow | File | What it does |
 |-------|---------|-------------|
-| **Optimization** | `/optimization` | Autonomous optimization loop — analyzes failures, creates variants, runs evals, iterates until target score is reached. See [Optimization loop](#optimization-loop). |
-| **Eval Runner** | `/eval-runner` | Runs a tenant evaluation and returns a score summary. |
-| **Synthetic Samples** | `/synthetic-samples` | Creates realistic synthetic test cases to augment eval datasets with edge cases. |
-| **Synthetic Pruner** | `/synthetic-pruner` | Prunes noncompliant synthetic examples and normalizes placeholder data. |
-| **Reset Tenant** | `/reset-tenant` | Resets a tenant to baseline (variant-001), removing all optimization artifacts. |
-| **PR Lifecycle** | `/pr-lifecycle` | Creates, self-reviews, simplifies, and addresses review comments on a PR until it's merge-ready. |
-| **K8s Manager** | `/k8s-manager` | Inspects K8s resources, tracks usage, cleans up stale pods, and launches eval workloads. |
+| **Optimization** | `.codex/agents/optimization.md` | Autonomous optimization loop: analyzes failures, creates variants, runs evals, iterates until target score is reached. See [Optimization loop](#optimization-loop). |
+| **Eval Runner** | `.codex/commands/eval-runner.md` | Runs a tenant evaluation and returns a score summary. |
+| **Synthetic Samples** | `.codex/commands/synthetic-samples.md` | Creates realistic synthetic test cases to augment eval datasets with edge cases. |
+| **Synthetic Pruner** | `.codex/commands/synthetic-pruner.md` | Prunes noncompliant synthetic examples and normalizes placeholder data. |
+| **Reset Tenant** | `.codex/commands/reset-tenant.md` | Resets a tenant to baseline (variant-001), removing optimization artifacts after confirmation. |
 
-### Internal subagents
+### Internal phases
 
-These are invoked automatically by the optimization agent — you don't run them directly:
+These are used by the optimization workflow; you usually don't run them directly:
 
-| Subagent | Purpose |
+| Phase | File | Purpose |
 |----------|---------|
-| **Step Attribution** | Post-eval failure analysis. Classifies failures by root cause and optimization level. |
-| **Variant Reviewer** | Independent guardrail check on proposed variants (catches leakage, placeholder drift, scope violations). |
+| **Step Attribution** | `.codex/agents/step-attribution.md` | Post-eval failure analysis. Classifies failures by root cause and optimization level. |
+| **Variant Reviewer** | `.codex/agents/variant-reviewer.md` | Independent guardrail check on proposed variants. |
+
+Legacy Claude Code assets remain under `.claude/` for teams that still run the original slash-command workflow.
 
 ---
 

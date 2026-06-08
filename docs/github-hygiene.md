@@ -19,9 +19,9 @@ Standards for commits, branches, and pull requests in the FAPO project. These co
 - **Imperative mood**, start uppercase, no trailing period
 - **Include PR number** in merge commits: `feat: add chain support (#899)`
 - **Atomic commits** — one logical change per commit
-- **Co-Authored-By footer** when Claude contributes:
+- **Co-Authored-By footer** when an AI coding assistant contributes and project policy requires it:
   ```
-  Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+  Co-Authored-By: <assistant name> <assistant email>
   ```
 
 ## Branch Workflow
@@ -63,8 +63,8 @@ multi-hop reasoning evaluations.
 - Resolve conversations after addressing feedback
 - **Squash-merge to `main`** for clean history
 
-## Claude-Specific Rules
+## AI Assistant Rules
 
 - Always run `python -m pytest` before opening a PR
-- Include the `Co-Authored-By` footer on all commits
+- Include the `Co-Authored-By` footer on commits when required by the active project policy
 - Never modify tenant `source_artifacts/` without explicit approval

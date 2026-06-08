@@ -359,11 +359,10 @@ cat tenants/web_agent/evals/run-001/summary.md
 Once you have baseline results, run the optimization agent:
 
 ```bash
-# In Claude Code
-> /optimization
-  → Tenant: web_agent
-  → Config: tenants/web_agent/configs/eval.json
-  → Success criteria: composite_score >= 90
+scripts/optimize-loop-codex.sh \
+  --tenant web_agent \
+  --config tenants/web_agent/configs/eval.json \
+  --goal "composite_score >= 90"
 ```
 
 The agent will:

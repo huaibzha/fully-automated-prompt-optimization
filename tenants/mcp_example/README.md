@@ -1,3 +1,9 @@
+<!--
+Copyright 2026 Cisco Systems, Inc. and its affiliates
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # MCP Example Tenant
 
 This tenant demonstrates agentic workflows using Model Context Protocol (MCP) integration.
@@ -33,10 +39,12 @@ The evaluation tests the agent's ability to:
 
 - `chains/react_agent.py` - ReAct agent with MCP tools
 - `prompts/modules/agent/variant-001.md` - Agent system prompt
-- `datasets/tool_tasks.jsonl` - Tasks requiring tool use
-- `code/scorers/task_scorer.py` - Scorer for task completion
+- `datasets/tool_tasks.jsonl` - 30 tool-use and reasoning tasks
+- `code/scorers/composite_scorer.py` - Weighted scorer combining LLM-as-judge answer correctness + trajectory
+- `code/scorers/trajectory_scorer.py` - Deterministic order/argument-aware tool-trajectory scorer
+- `code/scorers/llm_judge_scorer.py` - LLM-as-judge answer-correctness scorer
 - `configs/eval.json` - Eval configuration with MCP settings
-- `docs/iteration-playbook.md` - Optimization constraints
+- `docs/` - Tenant docs (profile, data/prompt contracts, eval operations, iteration playbook, change log, docs index)
 
 ## Tools Available
 

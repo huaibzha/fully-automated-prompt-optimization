@@ -10,10 +10,9 @@ This provides a proper MCP server with real protocol support.
 
 import asyncio
 
-from mcp.server.stdio import stdio_server
 from mcp.server import Server
+from mcp.server.stdio import stdio_server
 from mcp.types import TextContent, Tool
-
 
 # Create server instance
 server = Server("mock-mcp-server")
